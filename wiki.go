@@ -23,7 +23,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/view/"):]
 	fmt.Println("title is " + title)
 	p, err := loadPage(title)
-	fmt.Println(p)
+	fmt.Println(string(p.Body))
 	if err != nil {
 		fmt.Println(err)
 	} else {
