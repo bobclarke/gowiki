@@ -31,24 +31,22 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Page title is: " + title)
 	p, err := loadPage(title)
 
-	if err == nil {
-		fmt.Println("Page contents are: " + string(p.Body))
-		renderTemplate(w, "view", p)
-	} else {
-		fmt.Println(err)
+	// If page does not exist redirect to /edit so that we ca create it
+	if err != nil {
+		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
 	}
+	renderTemplate(w, "view", p)
+
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Calling the editHandler function")
-
-	// Get the title from the URL
-	title := r.URL.Path[len("/edit/"):]
+	title := r.URL.Path[len("/edit/"):] // Get the title from the URL
 	p, err := loadPage(title)
 	if err != nil {
-		p = &Page{Title: title}
+		p = &Page{Title: title} // If loadPage returns an error, we assume the page doesn't exist so we init a new struct and pointer with Title only
 	}
-	renderTemplate(w, "edit", p)
+	renderTemplate(w, "edit", p) // Send whichever pointer we have (newly initialised or loaded) to renderTemplate
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +56,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 	p := &Page{Title: title, Body: []byte(body)}
 	fmt.Println("Saving " + p.Title + ".txt with contents " + string(p.Body))
 	p.save()
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
 func (p *Page) save() error {
@@ -72,9 +71,7 @@ func loadPage(title string) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Update Page struct whilst createing a pointer
-	p := &Page{Title: title, Body: body}
+	p := &Page{Title: title, Body: body} // Update Page struct whilst createing a pointer
 	return p, nil
 }
 
