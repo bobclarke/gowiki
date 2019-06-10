@@ -13,22 +13,11 @@ import (
 )
 
 func main() {
+	fmt.Println("Calling the main function")
 	http.HandleFunc("/view/", viewHandler)
-	//http.HandleFunc("/edit/", editHandler)
-	//http.HandleFunc("/save/", saveHandler)
+	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func viewHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/view/"):]
-	fmt.Println("title is " + title)
-	p, err := loadPage(title)
-	fmt.Println(string(p.Body))
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		renderTemplate(w, "view", p)
-	}
 }
 
 type Page struct {
@@ -36,22 +25,24 @@ type Page struct {
 	Body  []byte
 }
 
-func (p *Page) save() error {
-	filename := p.Title + ".txt"
-	return ioutil.WriteFile(filename, p.Body, 0600)
-}
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Calling the viewHandler function")
+	title := r.URL.Path[len("/view/"):]
+	fmt.Println("Page title is: " + title)
+	p, err := loadPage(title)
 
-func loadPage(title string) (*Page, error) {
-	filename := title + ".txt"
-	fmt.Println("Loading the page " + filename)
-	body, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		fmt.Println("Page contents are: " + string(p.Body))
+		renderTemplate(w, "view", p)
+	} else {
+		fmt.Println(err)
 	}
-	return &Page{Title: title, Body: body}, nil
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Calling the editHandler function")
+
+	// Get the title from the URL
 	title := r.URL.Path[len("/edit/"):]
 	p, err := loadPage(title)
 	if err != nil {
@@ -61,10 +52,34 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Calling the saveHandler function")
+	title := r.URL.Path[len("/save/"):]
+	body := r.FormValue("body")
+	p := &Page{Title: title, Body: []byte(body)}
+	fmt.Println("Saving " + p.Title + ".txt with contents " + string(p.Body))
+	p.save()
+}
 
+func (p *Page) save() error {
+	fmt.Println("Calling the save function")
+	filename := p.Title + ".txt"
+	return ioutil.WriteFile(filename, p.Body, 0600)
+}
+
+func loadPage(title string) (*Page, error) {
+	fmt.Println("Calling the loadPage function for " + title + ".txt")
+	body, err := ioutil.ReadFile(title + ".txt")
+	if err != nil {
+		return nil, err
+	}
+
+	// Update Page struct whilst createing a pointer
+	p := &Page{Title: title, Body: body}
+	return p, nil
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	fmt.Println("Calling the renderTemplate function")
 	t, err := template.ParseFiles(tmpl + ".html")
 	if err != nil {
 		fmt.Println(err)
