@@ -6,5 +6,5 @@ events.on("exec", function(e, project) {
 })
 
 events.on("push", function(e, project){
-    console.log("Push event recieved")
+    console.log("Push event recieved from github")
 })
