@@ -1,0 +1,10 @@
+project: "bobclarke/gowiki"
+repository: "github.com/bobclarke/gowiki"
+cloneURL: "https://github.com/bobclarke/gowiki"
+
+sharedSecret: "IBrakeForSeaBeasts"
+
+github:
+   token: "github oauth token"
+
+allowPrivilegedJobs: “true"

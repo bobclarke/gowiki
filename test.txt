@@ -1,6 +1,2 @@
-Hello world
-This is a new line
-and another new line
-Third new line 
-And now adding a fourth
-Now a fifth line 
+Hello 
+Nw line 
