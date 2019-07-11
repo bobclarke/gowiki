@@ -17,12 +17,26 @@ func main() {
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/save/", saveHandler)
+	http.HandleFunc("/", homeHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 type Page struct {
 	Title string
 	Body  []byte
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	// This function will get a list if existing pages and display their names
+	dirContents := ioutil.ReadDir(".")
+	fmt.Println("dirContents are: ", dirContents)
+
+	fmt.Println("Calling the homeHandler function")
+	title := "home"
+	fmt.Println("Page title is: " + title)
+	p, err := loadPage(title)
+	fmt.Println(err)
+	renderTemplate(w, "view", p)
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +85,7 @@ func loadPage(title string) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := &Page{Title: title, Body: body} // Update Page struct whilst createing a pointer
+	p := &Page{Title: title, Body: body} // Update Page struct whilst creating a pointer
 	return p, nil
 }
 
