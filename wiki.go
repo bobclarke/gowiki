@@ -10,37 +10,60 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 func main() {
-	fmt.Println("Calling the main function")
+	fmt.Println("In the main function")
+	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/save/", saveHandler)
-	http.HandleFunc("/", homeHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+// Define a new type - based on a struct
 type Page struct {
 	Title string
 	Body  []byte
 }
 
+type HomePage struct {
+	Title string
+	Body  []string
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	// This function will get a list if existing pages and display their names
-	dirContents := ioutil.ReadDir(".")
-	fmt.Println("dirContents are: ", dirContents)
 
-	fmt.Println("Calling the homeHandler function")
-	title := "home"
-	fmt.Println("Page title is: " + title)
-	p, err := loadPage(title)
-	fmt.Println(err)
-	renderTemplate(w, "view", p)
+	fmt.Println("In the homeHandler function")
+	fileNames, _ := filepath.Glob("*txt")
+
+	/*
+		var fileList []byte
+
+		for _, fileName := range fileNames {
+			// Convert filename to an array of bytes
+			fileNameBytes := []byte(fileName)
+
+			// Append a delimiter
+			fileNameBytes = append(fileNameBytes, 58)
+
+			// Append to list of filenames
+			fileList = append(fileList, []byte(fileNameBytes)...) // The trailing dots allow two arrays to be concatenated, not sure how this works
+		}
+
+		p := &Page{Title: "home", Body: fileList} // Update Page struct whilst creating a pointer to it
+
+	*/
+
+	h := &HomePage{Title: "home", Body: fileNames}
+
+	renderHomeTemplate(w, "home", h)
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Calling the viewHandler function")
+	fmt.Println("In the viewHandler function")
 	title := r.URL.Path[len("/view/"):]
 	fmt.Println("Page title is: " + title)
 	p, err := loadPage(title)
@@ -54,7 +77,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Calling the editHandler function")
+	fmt.Println("In the editHandler function")
 	title := r.URL.Path[len("/edit/"):] // Get the title from the URL
 	p, err := loadPage(title)
 	if err != nil {
@@ -64,7 +87,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Calling the saveHandler function")
+	fmt.Println("In the saveHandler function")
 	title := r.URL.Path[len("/save/"):]
 	body := r.FormValue("body")
 	p := &Page{Title: title, Body: []byte(body)}
@@ -74,14 +97,16 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Page) save() error {
-	fmt.Println("Calling the save function")
+	fmt.Println("In the save function")
 	filename := p.Title + ".txt"
 	return ioutil.WriteFile(filename, p.Body, 0600)
 }
 
 func loadPage(title string) (*Page, error) {
-	fmt.Println("Calling the loadPage function for " + title + ".txt")
 	body, err := ioutil.ReadFile(title + ".txt")
+
+	fmt.Printf("In the loadPage function for %s.txt \n", title)
+
 	if err != nil {
 		return nil, err
 	}
@@ -90,11 +115,22 @@ func loadPage(title string) (*Page, error) {
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	fmt.Println("Calling the renderTemplate function")
+	fmt.Println("In the renderTemplate function")
 	t, err := template.ParseFiles(tmpl + ".html")
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		t.Execute(w, p)
 	}
+}
+
+func renderHomeTemplate(w http.ResponseWriter, tmpl string, p *HomePage) {
+	t, err := template.ParseFiles(tmpl + ".html")
+
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		t.Execute(w, p)
+	}
+
 }
