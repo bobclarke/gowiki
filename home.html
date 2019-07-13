@@ -1,2 +1,7 @@
 <h1>Viewing {{.Title}}</h1>
-<div>{{printf "%s" .Body}}</div>
+
+<ul>
+    {{range .Body}}
+        <li>{{.}}</li>
+    {{end}}
+</ul>
