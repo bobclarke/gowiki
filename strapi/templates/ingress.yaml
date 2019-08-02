@@ -1,0 +1,36 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: strapi 
+  labels:
+    app: strapi 
+    chart: strapi 
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.ingress.labels }}
+{{ toYaml .Values.ingress.labels | indent 4 }}
+{{- end }}
+{{- with .Values.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.ingress.usetls }}
+  tls:
+    - hosts:
+      - {{ .Values.ingress.url }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.url }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.path }}
+            backend:
+              serviceName: {{ .Values.service.name }}
+              servicePort: {{ .Values.service.port }}
+{{- end }}
+
+
+
+

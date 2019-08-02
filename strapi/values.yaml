@@ -1,0 +1,39 @@
+
+image: strapi/strapi
+imagePullPolicy: Always
+
+serviceType: ClusterIP
+
+admin-user: admin
+admin-pass: admin123
+admin-email: admin@foo.com
+
+database:
+  type: mongo
+  port: 27017
+  image: mongo
+  host: db
+  name: strapi
+
+container:
+  port: 1337
+
+service:
+  type: ClusterIP
+  port: 1337
+  name: api
+  annotations: {}
+  labels: {}
+
+persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: managed-standard
+    accessMode: ReadWriteOnce
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+

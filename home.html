@@ -2,6 +2,22 @@
 
 <ul>
     {{range .Body}}
-        <li>{{.}}</li>
+        <li><a href="/view/{{.}}">{{.}}</a></li>
     {{end}}
 </ul>
+
+<script>
+    function onSubmitForm(){
+        var newPageName = document.getElementById("newPage").value
+        console.log(newPageName)
+        document.myForm.action = "/edit/" + newPageName
+    }
+</script>
+
+<form name="myForm" onsubmit="onSubmitForm()" method="POST">
+    <div><input type="text" name="newPage" id="newPage">New page name</input></div>
+    <div><input type="submit" value="Create"></div>
+</form>
+
+
+

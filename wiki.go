@@ -5,12 +5,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -35,30 +37,16 @@ type HomePage struct {
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	// This function will get a list if existing pages and display their names
-
 	fmt.Println("In the homeHandler function")
 	fileNames, _ := filepath.Glob("*txt")
 
-	/*
-		var fileList []byte
+	// We need to remove the file extension
+	var shortNames []string
+	for _, filename := range fileNames {
+		shortNames = append(shortNames, strings.TrimSuffix(filename, ".txt"))
+	}
 
-		for _, fileName := range fileNames {
-			// Convert filename to an array of bytes
-			fileNameBytes := []byte(fileName)
-
-			// Append a delimiter
-			fileNameBytes = append(fileNameBytes, 58)
-
-			// Append to list of filenames
-			fileList = append(fileList, []byte(fileNameBytes)...) // The trailing dots allow two arrays to be concatenated, not sure how this works
-		}
-
-		p := &Page{Title: "home", Body: fileList} // Update Page struct whilst creating a pointer to it
-
-	*/
-
-	h := &HomePage{Title: "home", Body: fileNames}
-
+	h := &HomePage{Title: "home", Body: shortNames}
 	renderHomeTemplate(w, "home", h)
 }
 
@@ -104,8 +92,13 @@ func (p *Page) save() error {
 
 func loadPage(title string) (*Page, error) {
 	body, err := ioutil.ReadFile(title + ".txt")
-
 	fmt.Printf("In the loadPage function for %s.txt \n", title)
+
+	fmt.Println(body)
+
+	bytes.ReplaceAll([]byte(body), []byte("^M"), []byte("<br>"))
+
+	fmt.Println(body)
 
 	if err != nil {
 		return nil, err

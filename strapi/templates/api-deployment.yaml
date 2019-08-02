@@ -1,0 +1,56 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../docker-compose.yml
+    kompose.version: 1.16.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: api
+    spec:
+      containers:
+      - env:
+        - name: APP_NAME
+          value: strapi-app
+        - name: DATABASE_CLIENT
+          value: {{ .Values.database.type }}
+        - name: DATABASE_HOST
+          value: {{ .Values.database.host }}
+        - name: DATABASE_NAME
+          value: {{ .Values.database.name }}
+        - name: DATABASE_PASSWORD
+        - name: DATABASE_PORT
+          value: "27017"
+        - name: DATABASE_USERNAME
+        - name: HOST
+          value: localhost
+        image: strapi/strapi
+        name: api
+        ports:
+        - containerPort: {{ .Values.container.port }}
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/src/api/strapi-app
+          name: api-claim0
+        readinessProbe:
+          httpGet:
+            path: /admin
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always
+      volumes:
+      - name: api-claim0
+        persistentVolumeClaim:
+          claimName: api-claim0
+status: {}
